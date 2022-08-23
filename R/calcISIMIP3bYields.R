@@ -54,7 +54,7 @@ if (grepl("historical", subtype)) {
     x <- dimOrder(x = x, perm = c(2, 1))
   }
 
-  if(st$model=="PROMET"){
+  if(st$model=="PROMET" | st$model=="LDNDC"){
     x <- setNames(x, gsub("mai","maize",getNames(x)))
     x <- setNames(x, gsub("ri1","ricea",getNames(x)))
     x <- setNames(x, gsub("ri2","riceb",getNames(x)))
