@@ -20,7 +20,7 @@
 #' @importFrom dplyr %>% mutate left_join filter select if_else
 #' @importFrom tidyr pivot_longer
 
-readBiess2024 <- function(subtype = "MRI-ESM2-0:ssp370:multi", subset = seq(1966, 2100, 1)) { 
+readBiess2024 <- function(subtype = "MRI-ESM2-0:ssp370:multi", subset = seq(1966, 2100, 1)) {
 
 
   subtype <- toolSplitSubtype(subtype,
@@ -48,30 +48,30 @@ readBiess2024 <- function(subtype = "MRI-ESM2-0:ssp370:multi", subset = seq(1966
 
 
   suppressWarnings({
-  rasterMAg1 <- rasterMAg |>
-    pivot_longer(
-      cols = -c("x", "y"),                 # All columns but lat and lon
-      names_to = c("model", "year"),   # Split model and year
-      names_pattern = "(.*)_(\\d+)",   # Split by second underscore
-      values_to = "Value"
-    ) |>
-    mutate(year = as.integer(.data$year) + 1849,
-           lon   = if_else(x > 180, x - 360, x),  # Corrects longitudes >180
-           lat   = .data$y,
-           Data2 = subtype$scenario,
-           Data3 = subtype$variable,
-           Data1 = paste(sub("_.*", "", .data$model), .data$Data2, .data$Data3, sep = "."), )  |>
-    left_join(mapping |>
-                select(.data$iso, .data$lon, .data$lat), by = c("lon", "lat")) |>
-    mutate(
-      lon      = if_else(.data$x > 180, .data$x - 360, .data$x), 
-      lon      = gsub("\\.", "p", .data$lon),
-      lat      = gsub("\\.", "p", .data$lat),
-      celliso  = paste0(.data$lon, ".", .data$lat, ".", .data$iso)
-    ) |>
-    filter(!is.na(.data$iso)) |>
-    select(.data$celliso, Year = .data$year, .data$Data1, .data$Value) |>
-    as.data.frame()
+    rasterMAg1 <- rasterMAg |>
+      pivot_longer(
+        cols = -c("x", "y"),                 # All columns but lat and lon
+        names_to = c("model", "year"),   # Split model and year
+        names_pattern = "(.*)_(\\d+)",   # Split by second underscore
+        values_to = "Value"
+      ) |>
+      mutate(year = as.integer(.data$year) + 1849,
+             lon   = if_else(x > 180, x - 360, x),  # Corrects longitudes >180
+             lat   = .data$y,
+             Data2 = subtype$scenario,
+             Data3 = subtype$variable,
+             Data1 = paste(sub("_.*", "", .data$model), .data$Data2, .data$Data3, sep = "."), )  |>
+      left_join(mapping |>
+                  select(.data$iso, .data$lon, .data$lat), by = c("lon", "lat")) |>
+      mutate(
+        lon      = if_else(.data$x > 180, .data$x - 360, .data$x),
+        lon      = gsub("\\.", "p", .data$lon),
+        lat      = gsub("\\.", "p", .data$lat),
+        celliso  = paste0(.data$lon, ".", .data$lat, ".", .data$iso)
+      ) |>
+      filter(!is.na(.data$iso)) |>
+      select(.data$celliso, Year = .data$year, .data$Data1, .data$Value) |>
+      as.data.frame()
   })
 
 
