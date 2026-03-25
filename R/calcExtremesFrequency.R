@@ -22,7 +22,7 @@ calcExtremesFrequency <- function(subtype = "MRI-ESM2-0:ssp370:multi", initialYe
 
 
   if (method == "Biess2024") {
-    x <- readSource(method, subtype = subtype, subset = seq(initialYear - (yearsOver - 1), 2100, 1))
+    x <- readSource("Biess2024", subtype = subtype, subset = seq(initialYear - (yearsOver - 1), 2100, 1))
   } else {
     stop("The source is not available")
   }
@@ -60,6 +60,9 @@ calcExtremesFrequency <- function(subtype = "MRI-ESM2-0:ssp370:multi", initialYe
     "TRUE"     = out / yearsOver * 100,
     "FALSE"    = out
   )
+
+  getSets(out, fulldim = FALSE)[1] <- "x.y.iso"
+  getSets(out, fulldim = FALSE)[2]  <- "Year"
 
   unit <- switch(as.character(percentage),
     "fraction" = "Fraction",

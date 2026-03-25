@@ -6,7 +6,7 @@
 \usage{
 calcRiskYieldExtremes(
   subtype = "MRI-ESM2-0:ssp370",
-  initialYear = 1995,
+  initialYear = 2025,
   endYear = 2100,
   yearsOver = 30,
   kcr = "all",
@@ -18,7 +18,7 @@ calcRiskYieldExtremes(
 \arguments{
 \item{subtype}{details of climate model and scenario}
 
-\item{initialYear}{Initial year of the magpie object, e.g., 1995}
+\item{initialYear}{Initial year of the magpie object. Due to data availability first year available is 2010}
 
 \item{endYear}{End year of the magpie object, e.g., 2100}
 

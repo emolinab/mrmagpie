@@ -34,23 +34,26 @@ calcYieldAnomaly <- function(subtype = "MRI-ESM2-0:ssp370", initialYear = 1995, 
 
   # data table to be able to manage the large set
   lpjmLData <- as.data.table(lpjmLData, spatial = TRUE, temporal = TRUE)
-  setnames(lpjmLData, c("x.y.iso", "data.data1", "Year"), c("celliso", "data", "year"))
-  lpjmLData <- lpjmLData[, year := as.integer(sub("y", "", year))][, list(celliso, data, year, value)] # nolint: object_usage_linter
+  setnames(lpjmLData, c("x.y.iso", "data.data1"), c("celliso", "data"))
+  lpjmLData <- lpjmLData[, year := as.integer(sub("y", "", year))][, list(celliso, data, year, value)]
 
-  lpjmLData <-  lpjmLData[, rollingMean := frollmean(value, n = yearsOver, align = "right"), # nolint: object_usage_linter
-                        by = list(celliso, data)][, list(celliso, data, year, value, rollingMean)] # nolint: object_usage_linter
+  lpjmLData <-  lpjmLData[, rollingMean := frollmean(value, n = yearsOver, align = "right"),
+                          by = list(celliso, data)][, list(celliso, data, year, value, rollingMean)]
 
   # Anomaly as the relative difference between value and average
-  lpjmLData <-  lpjmLData[, `:=`(value = round(value, 2), # nolint: object_usage_linter
-                                 anomaly = round((value - rollingMean) / rollingMean, 1))][, # nolint: object_usage_linter
-                               list(celliso, data, year, anomaly)][year %in% seq(initialYear, endYear, timeStep)] # nolint: object_usage_linter
+  lpjmLData <-  lpjmLData[, `:=`(value = round(value, 2),
+                                 anomaly = round((value - rollingMean) / rollingMean, 1))]
+  lpjmLData <-  lpjmLData[, list(celliso, data, year, anomaly)][year %in% seq(initialYear, endYear, timeStep)]
 
   out <- as.magpie(lpjmLData, spatial = "celliso", temporal = "year")
   getCells(out) <- gsub("_", "\\.", getCells(out))
   getNames(out) <- gsub("_", "\\.", getNames(out))
+  getSets(out, fulldim = FALSE)[1] <- "x.y.iso"
 
+  out[!is.finite(out)] <- 0
   weight <-  calcOutput("AvlCropland", marginal_land = "magpie", cell_upper_bound = 0.9,
                         aggregate = FALSE)[, , "q33_marginal"]
+  getNames(weight) <- NULL
 
   return(list(
     x = out,
