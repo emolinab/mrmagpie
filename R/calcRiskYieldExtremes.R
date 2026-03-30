@@ -21,17 +21,19 @@
 #' @importFrom magclass as.magpie
 #' @importFrom madrat toolSplitSubtype
 #' @import data.table
+#' @importFrom stats wilcox.test
 
 calcRiskYieldExtremes <- function(subtype = "MRI-ESM2-0:ssp370", initialYear = 2025, endYear = 2100,
                                   yearsOver = 30, kcr = "all", version = "ggcmi_phase3_nchecks_bft_6277d36e",
                                   timeStep = 5, extremeType = "multi") {
 
-  celliso <- year <- value <- year <- valueHazard <- data <- d2 <- celliso <- eHaz <- NULL
+  celliso <- year <- value <- year <- valueHazard <- data <- celliso <- eHaz <- eNoHaz <- NULL
 
   # As data table to speed the calculation up
   yieldAnomaly <- as.data.table(calcOutput("YieldAnomaly", aggregate = FALSE, subtype = subtype,
                                            initialYear = (initialYear - yearsOver + 1), endYear = endYear,
                                            yearsOver = yearsOver, kcr = kcr, version = version, timeStep = 1))
+
   setnames(yieldAnomaly, c("x.y.iso", "data.data1"), c("celliso", "data"))
 
   binaryHazard <- as.data.table(readSource("Biess2024", subtype = paste0(subtype, ":", extremeType),
@@ -40,49 +42,68 @@ calcRiskYieldExtremes <- function(subtype = "MRI-ESM2-0:ssp370", initialYear = 2
 
   anomHazDT <- merge(
     yieldAnomaly,
-    binaryHazard[, list(celliso, year, value)], # nolint: object_usage_linter
+    binaryHazard[, list(celliso, year, value)],
     by = c("celliso", "year"),
     suffixes = c("", "Hazard")
   )
 
-  anomHazDT <- anomHazDT[, `:=`(year = as.numeric(gsub("y", "", year)))] # nolint: object_usage_linter
+  anomHazDT <- anomHazDT[, `:=`(year = as.numeric(gsub("y", "", year)))]
 
   expectFunction <- function(x) {
     freq <- table(round(x, 0))
     sum(as.numeric(names(freq)) * freq) / sum(freq)
   }
-  targetYears <- seq(initialYear, endYear, by = 5)
+  targetYears <- seq(initialYear, endYear, by = timeStep)
 
 
   resultList <- lapply(targetYears, function(y) {
-    dfWindow <- anomHazDT[year <= y & year > (y - yearsOver + 1)] # nolint: object_usage_linter
-    dfWindow[, list( # nolint: object_usage_linter
-      eHaz = expectFunction(value[valueHazard == 1]),            # nolint: object_usage_linter
-      eNoHaz = expectFunction(value[valueHazard == 0])           # nolint: object_usage_linter
-    ), by = list(celliso, data)][, year := y]                  # nolint: object_usage_linter
+    dfWindow <- anomHazDT[year <= y & year > (y - yearsOver + 1)]
+    dfWindow[, list(
+      eHaz = expectFunction(value[valueHazard == 1]),
+      eNoHaz = expectFunction(value[valueHazard == 0])
+    ), by = list(celliso, data)][, year := y]
   })
 
   expectHaz <- rbindlist(resultList)
-
+  expectHaz <- expectHaz[eNoHaz < eHaz, eHaz := 0]
 
   # Risk from the mean
 
-  hazProbability <- as.data.table(calcOutput("ExtremesFrequency", subtype = subtype, initialYear = initialYear,
-                                             yearsOver = yearsOver, percentage = "fraction", source = "Biess2024"))
+  hazProbability <- as.data.table(calcOutput("ExtremesFrequency", subtype = paste0(subtype, ":", extremeType),
+                                             initialYear = initialYear,
+                                             yearsOver = yearsOver, percentage = "fraction", method = "Biess2024",
+                                             aggregate = FALSE))
+  setnames(hazProbability, c("x.y.iso", "Year"), c("celliso", "year"))
+  hazProbability <- hazProbability[, year := as.integer(sub("y", "", year))][, list(celliso, year, value)]
 
-  hazProbability <- hazProbability[, d2 := as.integer(sub("y", "", d2))][, list(celliso, d2, value)] # nolint: object_usage_linter
-  setnames(hazProbability, c("x.y.iso", "d2"), c("celliso", "year"))
-
-  riskDT <- merge(
-                  hazProbability,
-                  expectHaz,
-                  by = c("celliso", "year"))[, `:=` (value = value * eHaz)][, list(celliso, year, data, # nolint: object_usage_linter
-                   value)][value > 0 | !(is.finite(value)), `:=`(value = 0)] # nolint: object_usage_linter
+  riskDT <- merge(hazProbability[year %in% targetYears],
+                  expectHaz[year %in% targetYears][, list(celliso, year, data, eHaz, value)],
+                  by = c("celliso", "year"))[, `:=`(value = value * eHaz)
+  ][, list(celliso, year, data,
+           value)][value > 0 | !(is.finite(value)), `:=`(value = 0)]
 
   out <- as.magpie(riskDT, spatial = "celliso", temporal = "year")
   getNames(out) <- gsub("_", "\\.", getNames(out))
   getCells(out) <- gsub("_", "\\.", getCells(out))
   out[!is.finite(out)] <- 0
+
+
+  # Make the risk zero for those years-crops combination were pValue is larger than 0.05
+  # (meaning that the Haz - noHaz data is statistically are not different)
+
+  pValue <- anomHazDT[year %in% targetYears][, list(
+                                                    pValue = wilcox.test(
+                                                      .SD[valueHazard == 1]$value, # & value!=0
+                                                      .SD[valueHazard == 0]$value
+                                                    )$p.value), by = list(data, year)]
+
+
+  nonSig <- pValue[pValue > 0.05 | is.na(pValue)]
+
+  for (i in seq_len(nrow(nonSig))) {
+    out[, nonSig$year[i], nonSig$data[i]] <- 0
+  }
+
 
   # Mapping LPJmL to MAgPIE crops
   lpj2mag   <- toolGetMapping("MAgPIE_LPJmL.csv", type = "sectoral", where = "mappingfolder")
