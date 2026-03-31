@@ -199,10 +199,10 @@ fullCELLULARMAGPIE <- function(rev = numeric_version("0.1"), dev = "",
   calcOutput("DegradationYieldReduction", aggregate = "cluster", round = 6, cells = cells,
              outputStatistics = stats, file = paste0("f14_degradation_yld_reduc_", ctype, ".mz"))
 
-  calcOutput("RiskYieldExtremes", subtype = climatetype, initialYear = 2010,
+  calcOutput("RiskYieldExtremes", subtype = climatetype, initialYear = 2025,
              endYear = lpjYears[length(lpjYears)],
              yearsOver = 30, kcr = "all", version = lpjml[["crop"]],
-             timeStep = 1, extremeType = "multi", aggregate = "cluster", round = 6,
+             timeStep = 5, extremeType = "multi", aggregate = "cluster", round = 6,
              outputStatistics = stats, file = paste0("f14_ext_yld_risk_", ctype, ".mz"))
 
   # 22 land conservation
