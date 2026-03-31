@@ -203,7 +203,7 @@ fullCELLULARMAGPIE <- function(rev = numeric_version("0.1"), dev = "",
              endYear = lpjYears[length(lpjYears)],
              yearsOver = 30, kcr = "all", version = lpjml[["crop"]],
              timeStep = 5, extremeType = "multi", aggregate = "cluster", round = 6,
-             outputStatistics = stats, file = paste0("f14_ext_yld_risk_", ctype, ".mz"))
+             outputStatistics = stats, file = paste0("f14_ext_yld_risk_", ctype, ".cs3"))
 
   # 22 land conservation
   calcOutput("ProtectedAreaBaseline", nclasses = "seven",
