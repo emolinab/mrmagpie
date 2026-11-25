@@ -1,5 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
+<url><loc>/CODE_STYLE.html</loc></url>
+<url><loc>/CONTRIBUTING.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
@@ -26,6 +28,7 @@
 <url><loc>/reference/calcFoodDemandGridded.html</loc></url>
 <url><loc>/reference/calcGrasslandBiomass.html</loc></url>
 <url><loc>/reference/calcGrasslandsYields.html</loc></url>
+<url><loc>/reference/calcGrassyEcoregions.html</loc></url>
 <url><loc>/reference/calcGridPop.html</loc></url>
 <url><loc>/reference/calcIrrigation.html</loc></url>
 <url><loc>/reference/calcLabourProdImpact.html</loc></url>
@@ -54,6 +57,8 @@
 <url><loc>/reference/convertGPD2022.html</loc></url>
 <url><loc>/reference/correctAvlLandSi.html</loc></url>
 <url><loc>/reference/correctBendingTheCurve.html</loc></url>
+<url><loc>/reference/correctDinerstein2017.html</loc></url>
+<url><loc>/reference/correctGAMI.html</loc></url>
 <url><loc>/reference/correctGFAD.html</loc></url>
 <url><loc>/reference/correctGPM2.html</loc></url>
 <url><loc>/reference/correctLabourProdImpactEmu.html</loc></url>
@@ -62,6 +67,8 @@
 <url><loc>/reference/correctRamankutty.html</loc></url>
 <url><loc>/reference/correctTransportDistance.html</loc></url>
 <url><loc>/reference/correctWindisch2021.html</loc></url>
+<url><loc>/reference/downloadDinerstein2017.html</loc></url>
+<url><loc>/reference/downloadGAMI.html</loc></url>
 <url><loc>/reference/downloadMAPSPAM.html</loc></url>
 <url><loc>/reference/downloadMehta2024.html</loc></url>
 <url><loc>/reference/downloadRamankutty.html</loc></url>
@@ -72,6 +79,8 @@
 <url><loc>/reference/mrmagpie-package.html</loc></url>
 <url><loc>/reference/readAvlLandSi.html</loc></url>
 <url><loc>/reference/readBendingTheCurve.html</loc></url>
+<url><loc>/reference/readDinerstein2017.html</loc></url>
+<url><loc>/reference/readGAMI.html</loc></url>
 <url><loc>/reference/readGFAD.html</loc></url>
 <url><loc>/reference/readGPD.html</loc></url>
 <url><loc>/reference/readGPD2022.html</loc></url>
